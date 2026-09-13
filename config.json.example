@@ -1,0 +1,61 @@
+{
+  "_comment": "AI Book-to-Game Engine — local config. Never committed to version control.",
+  "llm": {
+    "backend": "ollama",
+    "_backends": [
+      "ollama",
+      "lmstudio",
+      "openai",
+      "anthropic",
+      "gemini",
+      "openai_compatible"
+    ],
+    "model": "qwen2.5-coder:7b",
+    "base_url": "http://localhost:11434",
+    "api_key": "YOUR_API_KEY_HERE",
+    "max_tokens": "8192",
+    "temperature": "0.7"
+  },
+  "image": {
+    "backend": "none",
+    "_backends": [
+      "none",
+      "automatic1111",
+      "comfyui",
+      "dalle3",
+      "openai_compatible"
+    ],
+    "base_url": "http://127.0.0.1:8188",
+    "api_key": "YOUR_API_KEY_HERE",
+    "width": "768",
+    "height": "512",
+    "steps": "25",
+    "cfg_scale": "7.5",
+    "checkpoint": "v1-5-pruned-emaonly.safetensors"
+  },
+  "profiles": {
+    "active": "Default",
+    "users": {
+      "Default": {
+        "dials": {
+          "violence": "graphic",
+          "romance": "explicit",
+          "language": "strong",
+          "substance": "omit",
+          "religion": "neutral",
+          "horror": "softened"
+        },
+        "id": "Default",
+        "name": "Default",
+        "content_level": "5",
+        "difficulty": "scholar"
+      }
+    }
+  },
+  "app": {
+    "host": "127.0.0.1",
+    "port": 8742,
+    "open_browser": true,
+    "data_dir": "data"
+  }
+}

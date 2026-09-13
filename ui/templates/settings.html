@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Settings — AI Book-to-Game Engine{% endblock %}
+
+{% block content %}
+<div class="settings-layout">
+  <h1 class="page-heading">Settings</h1>
+
+  <!-- ══════════════════════════════════════════════════════
+       TWO-COLUMN SETTINGS GRID
+       ══════════════════════════════════════════════════════ -->
+  <div class="settings-grid">
+
+    <!-- ────────────────────────────────────────────────────
+         LEFT CARD — Language Model (LLM) Settings
+         ──────────────────────────────────────────────────── -->
+    <div class="settings-card" id="llm-settings-card">
+      <h2 class="card-heading">🤖 Language Model</h2>
+
+      <form id="llm-form" novalidate>
+
+        <!-- Backend selector -->
+        <div class="form-group">
+          <label class="form-label" for="llm-backend">Backend</label>
+          <select id="llm-backend" name="backend" class="input-field select-field"
+                  data-current="{{ config.llm.backend | default('ollama') }}">
+            <option value="ollama">Ollama (local)</option>
+            <option value="lmstudio">LM Studio (local)</option>
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="openai_compatible">OpenAI-Compatible API</option>
+          </select>
+        </div>
+
+        <!-- Model name -->
+        <div class="form-group">
+          <label class="form-label" for="llm-model">Model Name</label>
+          <input type="text" id="llm-model" name="model" class="input-field"
+                 placeholder="e.g. llama3.2, gpt-4o, claude-3-5-sonnet…"
+                 value="{{ config.llm.model | default('') }}" />
+        </div>
+
+        <!-- Base URL (shown for local / openai_compatible) -->
+        <div class="form-group" id="llm-url-group">
+          <label class="form-label" for="llm-base-url">Base URL</label>
+          <input type="url" id="llm-base-url" name="base_url" class="input-field"
+                 placeholder="http://localhost:11434"
+                 value="{{ config.llm.base_url | default('') }}" />
+        </div>
+
+        <!-- API Key (shown for cloud backends) -->
+        <div class="form-group" id="llm-key-group">
+          <label class="form-label" for="llm-api-key">API Key</label>
+          <div class="input-with-toggle">
+            <input type="password" id="llm-api-key" name="api_key" class="input-field"
+                   placeholder="sk-…"
+                   value="{{ config.llm.api_key | default('') }}" />
+            <button type="button" class="btn-reveal" data-target="llm-api-key" aria-label="Toggle API key visibility">👁</button>
+          </div>
+        </div>
+
+        <!-- Max Tokens slider -->
+        <div class="form-group">
+          <label class="form-label" for="llm-max-tokens">
+            Max Tokens
+            <span id="llm-max-tokens-val" class="slider-readout">{{ config.llm.max_tokens | default(2048) }}</span>
+          </label>
+          <input type="range" id="llm-max-tokens" name="max_tokens" class="slider"
+                 min="256" max="8192" step="128"
+                 value="{{ config.llm.max_tokens | default(2048) }}" />
+          <div class="slider-labels"><span>256</span><span>8192</span></div>
+        </div>
+
+        <!-- Temperature slider -->
+        <div class="form-group">
+          <label class="form-label" for="llm-temperature">
+            Temperature
+            <span id="llm-temperature-val" class="slider-readout">{{ config.llm.temperature | default(0.8) }}</span>
+          </label>
+          <input type="range" id="llm-temperature" name="temperature" class="slider"
+                 min="0" max="2" step="0.05"
+                 value="{{ config.llm.temperature | default(0.8) }}" />
+          <div class="slider-labels"><span>0 (precise)</span><span>2 (creative)</span></div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="btn-row">
+          <button type="button" id="llm-test-btn" class="btn btn-secondary">Test Connection</button>
+          <button type="button" id="llm-save-btn" class="btn btn-primary">Save</button>
+        </div>
+
+        <!-- Test / save result feedback -->
+        <div id="llm-test-result" class="test-result hidden" role="alert"></div>
+
+      </form>
+    </div><!-- /#llm-settings-card -->
+
+    <!-- ────────────────────────────────────────────────────
+         RIGHT CARD — Image Generation Settings
+         ──────────────────────────────────────────────────── -->
+    <div class="settings-card" id="image-settings-card">
+      <h2 class="card-heading">🖼️ Image Generation</h2>
+
+      <form id="image-form" novalidate>
+
+        <!-- Backend selector -->
+        <div class="form-group">
+          <label class="form-label" for="image-backend">Backend</label>
+          <select id="image-backend" name="backend" class="input-field select-field"
+                  data-current="{{ config.image.backend | default('none') }}">
+            <option value="none">None (disabled)</option>
+            <option value="automatic1111">AUTOMATIC1111 (Stable Diffusion)</option>
+            <option value="comfyui">ComfyUI</option>
+            <option value="dalle3">DALL·E 3 (OpenAI)</option>
+            <option value="openai_compatible">OpenAI-Compatible API</option>
+            <option value="gemini">Google Gemini / AI Studio</option>
+          </select>
+        </div>
+
+        <!-- Model Checkpoint -->
+        <div class="form-group" id="image-model-group">
+          <label class="form-label" for="image-checkpoint">Model Name / Checkpoint</label>
+          <input type="text" id="image-checkpoint" name="checkpoint" class="input-field"
+                 placeholder="e.g. nano-banana, sd-v1-4.ckpt"
+                 value="{{ config.image.checkpoint | default('') }}" />
+        </div>
+
+        <!-- Base URL -->
+        <div class="form-group" id="image-url-group">
+          <label class="form-label" for="image-base-url">Base URL</label>
+          <input type="url" id="image-base-url" name="base_url" class="input-field"
+                 placeholder="http://localhost:7860"
+                 value="{{ config.image.base_url | default('') }}" />
+        </div>
+
+        <!-- API Key -->
+        <div class="form-group" id="image-key-group">
+          <label class="form-label" for="image-api-key">API Key</label>
+          <div class="input-with-toggle">
+            <input type="password" id="image-api-key" name="api_key" class="input-field"
+                   placeholder="sk-…"
+                   value="{{ config.image.api_key | default('') }}" />
+            <button type="button" class="btn-reveal" data-target="image-api-key" aria-label="Toggle API key visibility">👁</button>
+          </div>
+        </div>
+
+        <!-- Dimensions row -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="image-width">Width (px)</label>
+            <input type="number" id="image-width" name="width" class="input-field"
+                   min="128" max="2048" step="64"
+                   value="{{ config.image.width | default(512) }}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="image-height">Height (px)</label>
+            <input type="number" id="image-height" name="height" class="input-field"
+                   min="128" max="2048" step="64"
+                   value="{{ config.image.height | default(512) }}" />
+          </div>
+        </div>
+
+        <!-- Steps slider -->
+        <div class="form-group">
+          <label class="form-label" for="image-steps">
+            Steps
+            <span id="image-steps-val" class="slider-readout">{{ config.image.steps | default(20) }}</span>
+          </label>
+          <input type="range" id="image-steps" name="steps" class="slider"
+                 min="1" max="150" step="1"
+                 value="{{ config.image.steps | default(20) }}" />
+          <div class="slider-labels"><span>1</span><span>150</span></div>
+        </div>
+
+        <!-- CFG Scale slider -->
+        <div class="form-group">
+          <label class="form-label" for="image-cfg">
+            CFG Scale
+            <span id="image-cfg-val" class="slider-readout">{{ config.image.cfg_scale | default(7.0) }}</span>
+          </label>
+          <input type="range" id="image-cfg" name="cfg_scale" class="slider"
+                 min="1" max="30" step="0.5"
+                 value="{{ config.image.cfg_scale | default(7.0) }}" />
+          <div class="slider-labels"><span>1</span><span>30</span></div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="btn-row">
+          <button type="button" id="image-test-btn" class="btn btn-secondary">Test Connection</button>
+          <button type="button" id="image-save-btn" class="btn btn-primary">Save</button>
+        </div>
+
+        <!-- Test / save result feedback -->
+        <div id="image-test-result" class="test-result hidden" role="alert"></div>
+
+      </form>
+    </div><!-- /#image-settings-card -->
+
+  </div><!-- /.settings-grid -->
+</div><!-- /.settings-layout -->
+
+<!-- ══════════════════════════════════════════════════════════════
+     SETTINGS PAGE INLINE SCRIPT
+     Handles backend-dependent show/hide, sliders, test, and save.
+     ══════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ── Backend visibility rules ───────────────────────────── */
+  const LLM_LOCAL_BACKENDS   = new Set(['ollama', 'lmstudio', 'openai_compatible']);
+  const LLM_KEYED_BACKENDS   = new Set(['openai', 'anthropic', 'gemini', 'openai_compatible']);
+  const IMAGE_LOCAL_BACKENDS = new Set(['automatic1111', 'comfyui', 'openai_compatible']);
+  const IMAGE_KEYED_BACKENDS = new Set(['dalle3', 'openai_compatible', 'gemini']);
+  const IMAGE_MODEL_BACKENDS = new Set(['dalle3', 'openai_compatible', 'gemini', 'automatic1111', 'comfyui']);
+
+  function setVisible(el, visible) {
+    if (el) el.classList.toggle('hidden', !visible);
+  }
+
+  /* Pre-select a <select> to its saved value stored in data-current */
+  function preselectBackend(sel) {
+    const current = sel && sel.dataset.current;
+    if (!current) return;
+    for (const opt of sel.options) {
+      if (opt.value === current) { opt.selected = true; break; }
+    }
+  }
+
+  /* Collect all named form fields into a plain object */
+  function collectForm(formId) {
+    const data = {};
+    document.getElementById(formId).querySelectorAll('[name]').forEach(el => {
+      data[el.name] = el.value;
+    });
+    return data;
+  }
+
+  /* Update visibility based on LLM backend selection */
+  function onLlmChange() {
+    const val = document.getElementById('llm-backend').value;
+    setVisible(document.getElementById('llm-url-group'), LLM_LOCAL_BACKENDS.has(val));
+    setVisible(document.getElementById('llm-key-group'), LLM_KEYED_BACKENDS.has(val));
+  }
+
+  /* Update visibility based on Image backend selection */
+  function onImageChange() {
+    const val = document.getElementById('image-backend').value;
+    setVisible(document.getElementById('image-url-group'), val !== 'none' && IMAGE_LOCAL_BACKENDS.has(val));
+    setVisible(document.getElementById('image-key-group'), val !== 'none' && IMAGE_KEYED_BACKENDS.has(val));
+    setVisible(document.getElementById('image-model-group'), val !== 'none' && IMAGE_MODEL_BACKENDS.has(val));
+  }
+
+  /* Live readout for a range slider */
+  function bindSlider(sliderId, readoutId) {
+    const s = document.getElementById(sliderId);
+    const r = document.getElementById(readoutId);
+    if (s && r) s.addEventListener('input', () => { r.textContent = s.value; });
+  }
+
+  /* Show a result message (success or failure) */
+  function showResult(elId, msg, ok) {
+    const el = document.getElementById(elId);
+    el.textContent = (ok ? '✔ ' : '✖ ') + msg;
+    el.className = 'test-result ' + (ok ? 'test-ok' : 'test-fail');
+  }
+
+  /* Generic API POST helper */
+  async function apiPost(url, data, resultElId) {
+    showResult(resultElId, 'Working…', true);
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await resp.json().catch(() => ({}));
+      showResult(resultElId, json.message || json.error || (resp.ok ? 'OK' : 'Failed'), resp.ok && json.success !== false);
+    } catch (err) {
+      showResult(resultElId, 'Network error: ' + err.message, false);
+    }
+  }
+
+  /* ── Wire everything up ─────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    /* Pre-select saved backend values */
+    preselectBackend(document.getElementById('llm-backend'));
+    preselectBackend(document.getElementById('image-backend'));
+
+    /* Initial field visibility */
+    onLlmChange();
+    onImageChange();
+
+    /* Backend change listeners */
+    document.getElementById('llm-backend').addEventListener('change', onLlmChange);
+    document.getElementById('image-backend').addEventListener('change', onImageChange);
+
+    /* Sliders */
+    bindSlider('llm-max-tokens',  'llm-max-tokens-val');
+    bindSlider('llm-temperature', 'llm-temperature-val');
+    bindSlider('image-steps',     'image-steps-val');
+    bindSlider('image-cfg',       'image-cfg-val');
+
+    /* Password toggle buttons */
+    document.querySelectorAll('.btn-reveal').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = document.getElementById(btn.dataset.target);
+        if (t) t.type = (t.type === 'password') ? 'text' : 'password';
+      });
+    });
+
+    /* LLM buttons */
+    document.getElementById('llm-test-btn').addEventListener('click', () =>
+      apiPost('/api/settings/test-llm',   collectForm('llm-form'),   'llm-test-result'));
+    document.getElementById('llm-save-btn').addEventListener('click', () =>
+      apiPost('/api/settings/save',       collectForm('llm-form'),   'llm-test-result'));
+
+    /* Image buttons */
+    document.getElementById('image-test-btn').addEventListener('click', () =>
+      apiPost('/api/settings/test-image', collectForm('image-form'), 'image-test-result'));
+    document.getElementById('image-save-btn').addEventListener('click', () =>
+      apiPost('/api/settings/save-image', collectForm('image-form'), 'image-test-result'));
+  });
+}());
+</script>
+{% endblock %}

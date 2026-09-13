@@ -1,0 +1,55 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env
+
+# API keys and secrets — NEVER commit these
+.env.local
+secrets.json
+
+# User data — local only, can be large
+data/books/
+data/images/
+data/saves/
+data/games/
+
+# Config contains user-specific paths and potentially API keys
+# Keep config.json.example but not the live config
+# config.json   <-- uncomment this if you ever go public
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python packaging
+*.egg-info/
+dist/
+build/
+
+# Logs
+*.log
+
+# Webapp Client
+webapp-desktop-client/node_modules/
+webapp-desktop-client/dist/
+webapp-desktop-client/dist-electron/
+webapp-desktop-client/*.local
+webapp-desktop-client/release/
+webapp-desktop-client/out/
+
+# Config
+config.json

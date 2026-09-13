@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book_title | default('Game') }} — AI Book-to-Game Engine{% endblock %}
+
+{% block content %}
+<!-- ══════════════════════════════════════════════════════════════════
+     GAME SCREEN
+     book_id is injected via body[data-book-id] (set in base.html)
+     and read by game.js on DOMContentLoaded.
+     ══════════════════════════════════════════════════════════════════ -->
+
+<!-- Breadcrumb / back link -->
+<div class="game-breadcrumb">
+  <a href="/" class="breadcrumb-link">← Library</a>
+  <span class="breadcrumb-sep">|</span>
+  <span id="breadcrumb-title">{{ book_title | default('Loading…') }}</span>
+</div>
+
+<div class="game-layout">
+
+  <!-- ═══════════════════════════════════════════════
+       TOP HALF — Scene image + Location info panel
+       ═══════════════════════════════════════════════ -->
+  <div class="game-top">
+
+    <!-- Scene image area (left ~60%) -->
+    <div class="scene-image-wrap">
+      <!-- Actual generated image; hidden until src is set -->
+      <img id="scene-image"
+           src=""
+           alt="Scene illustration"
+           class="scene-image hidden"
+           onerror="this.classList.add('hidden'); document.getElementById('scene-placeholder').classList.remove('hidden')" />
+
+      <!-- Placeholder shown when no image is available -->
+      <div id="scene-placeholder" class="scene-placeholder">
+        <p id="scene-placeholder-title">{{ book_title | default('') }}</p>
+        <p class="scene-placeholder-hint">[ No image available ]</p>
+      </div>
+
+      <!-- Spinner overlay while image is being generated -->
+      <div id="image-spinner" class="image-spinner hidden" aria-label="Generating scene image…">
+        <div class="spinner"></div>
+        <p>Generating image…</p>
+      </div>
+    </div>
+
+    <!-- Location info panel (right ~40%) -->
+    <aside class="location-panel" aria-label="Location information">
+      <h2 id="location-name" class="location-name">Loading…</h2>
+
+      <!-- Minimap -->
+      <div class="info-section minimap-section">
+        <h3 class="info-label">Map</h3>
+        <div id="minimap-grid" class="minimap-grid">
+          <!-- 3x3 grid populated by JS -->
+          <div class="mm-cell mm-nw"></div>
+          <div class="mm-cell mm-n" id="mm-n"></div>
+          <div class="mm-cell mm-ne"></div>
+          
+          <div class="mm-cell mm-w" id="mm-w"></div>
+          <div class="mm-cell mm-c" id="mm-c"><span class="mm-marker">★</span></div>
+          <div class="mm-cell mm-e" id="mm-e"></div>
+          
+          <div class="mm-cell mm-sw"></div>
+          <div class="mm-cell mm-s" id="mm-s"></div>
+          <div class="mm-cell mm-se"></div>
+        </div>
+        <div id="minimap-vertical" class="minimap-vertical"></div>
+      </div>
+
+      <!-- Exits — each becomes a clickable button via JS -->
+      <div class="info-section">
+        <h3 class="info-label">Exits</h3>
+        <div id="exits-list" class="exits-list" role="list">
+          <!-- Populated by updateUI() in game.js -->
+        </div>
+      </div>
+
+      <!-- Characters present -->
+      <div class="info-section">
+        <h3 class="info-label">Characters</h3>
+        <ul id="characters-list" class="detail-list" aria-label="Characters present">
+          <li class="detail-item none-item">None</li>
+        </ul>
+      </div>
+
+      <!-- Items in location -->
+      <div class="info-section">
+        <h3 class="info-label">Items Here</h3>
+        <ul id="items-list" class="detail-list" aria-label="Items in location">
+          <li class="detail-item none-item">None</li>
+        </ul>
+      </div>
+    </aside>
+
+  </div><!-- /.game-top -->
+
+  <!-- ═══════════════════════════════════════════════
+       BOTTOM HALF — Output, input, inventory, score
+       ═══════════════════════════════════════════════ -->
+  <div class="game-bottom">
+
+    <!-- Scrollable text output log -->
+    <div id="game-output"
+         class="game-output"
+         role="log"
+         aria-live="polite"
+         aria-label="Game output">
+      <p class="output-line output-system">Initialising…</p>
+    </div>
+
+    <!-- Command input row -->
+    <div class="input-row" role="form" aria-label="Command input">
+      <span class="input-prompt">&gt;</span>
+      <input type="text"
+             id="game-input"
+             class="input-field game-input-field"
+             placeholder="Type a command… (look, go north, take key…)"
+             autocomplete="off"
+             autocorrect="off"
+             autocapitalize="off"
+             spellcheck="false"
+             aria-label="Command input" />
+      <button id="send-btn" class="btn btn-primary">Send</button>
+    </div>
+
+    <!-- Status bar: inventory + score/moves -->
+    <div class="status-bar">
+      <div class="inventory-wrap">
+        <span class="status-label">Inventory:</span>
+        <div id="inventory-list" class="inventory-list" aria-label="Inventory">
+          <span class="inventory-item none-item">Empty</span>
+        </div>
+      </div>
+      <div class="score-wrap">
+        <span class="status-label">Score:</span>
+        <span id="score-value" class="score-value">0</span>
+        <span class="status-sep">|</span>
+        <span class="status-label">Moves:</span>
+        <span id="move-count"  class="score-value">0</span>
+      </div>
+    </div>
+
+  </div><!-- /.game-bottom -->
+
+</div><!-- /.game-layout -->
+{% endblock %}

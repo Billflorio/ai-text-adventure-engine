@@ -1,0 +1,109 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Library — AI Book-to-Game Engine{% endblock %}
+
+{% block content %}
+<!-- ══════════════════════════════════════════════════════════════════
+     PROGRESS / GENERATION OVERLAY
+     Shown while a game is being generated (can take 30-90 seconds).
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="generation-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
+  <div class="overlay-box">
+    <div class="spinner" aria-hidden="true"></div>
+    <h2 id="overlay-title">Generating Game…</h2>
+    <p id="overlay-message">Analysing book and building world model. This may take a minute.</p>
+    <div class="progress-bar-track">
+      <div id="overlay-progress" class="progress-bar-fill" style="width:0%"></div>
+    </div>
+    <p id="overlay-detail" class="overlay-detail"></p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TWO-PANEL LIBRARY LAYOUT
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="library-layout">
+
+  <!-- ─────────────────────────────────────────────
+       LEFT PANEL — My Games
+       ───────────────────────────────────────────── -->
+  <section class="library-panel" id="panel-my-games">
+    <h1 class="panel-heading">Your Library</h1>
+
+    <!-- Games list (populated by JS from GET /api/library) -->
+    <div id="my-games-list" class="games-grid">
+      <p class="placeholder-text">Loading your games…</p>
+    </div>
+
+    <hr class="panel-divider" />
+
+    <!-- ── Upload Section ── -->
+    <h2 class="subheading">Load a Book</h2>
+    <p class="hint-text">Supports PDF, EPUB, and plain-text (.txt) files.</p>
+
+    <!-- Drag-and-drop zone -->
+    <div id="drop-zone" class="drop-zone" role="button" tabindex="0"
+         aria-label="Drag and drop a book file here or click to browse">
+      <span class="drop-icon">📂</span>
+      <p>Drag &amp; drop a file here, or <span class="link-text">click to browse</span></p>
+      <input type="file" id="book-file-input" accept=".pdf,.epub,.txt"
+             class="hidden" aria-hidden="true" />
+    </div>
+
+    <!-- Selected file name feedback -->
+    <p id="selected-file-name" class="hint-text hidden"></p>
+
+    <!-- Upload button -->
+    <button id="load-book-btn" class="btn btn-primary btn-block" disabled>
+      Load Book
+    </button>
+
+    <!-- Upload progress -->
+    <div id="upload-progress-wrap" class="hidden">
+      <div class="progress-bar-track" style="margin-top:8px">
+        <div id="upload-progress" class="progress-bar-fill" style="width:0%"></div>
+      </div>
+      <p id="upload-status" class="hint-text"></p>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────
+       RIGHT PANEL — Browse Project Gutenberg
+       ───────────────────────────────────────────── -->
+  <section class="library-panel" id="panel-gutenberg">
+    <h1 class="panel-heading">Browse Project Gutenberg</h1>
+
+    <!-- Search controls -->
+    <div class="search-bar">
+      <input type="text" id="gutenberg-query" class="input-field" placeholder="Search by title or author…"
+             aria-label="Search Project Gutenberg" />
+      <select id="gutenberg-topic" class="input-field select-field" aria-label="Filter by topic">
+        <option value="">All</option>
+        <option value="children">Children's</option>
+        <option value="adventure">Adventure</option>
+        <option value="mystery">Mystery</option>
+        <option value="romance">Romance</option>
+        <option value="horror">Horror</option>
+        <option value="classics">Classics</option>
+      </select>
+      <button id="gutenberg-search-btn" class="btn btn-primary">Search</button>
+    </div>
+
+    <!-- Loading spinner (shown during search fetch) -->
+    <div id="gutenberg-spinner" class="spinner-inline hidden" aria-label="Searching…" role="status"></div>
+
+    <!-- Results grid (populated by gutenbergSearch() in game.js) -->
+    <div id="gutenberg-results" class="games-grid gutenberg-grid" aria-live="polite">
+      <p class="placeholder-text">Search for a book above to get started.</p>
+    </div>
+
+    <!-- Pagination controls -->
+    <div id="gutenberg-pagination" class="pagination hidden" aria-label="Search pagination">
+      <button id="gutenberg-prev" class="btn btn-secondary" disabled>← Previous</button>
+      <span id="gutenberg-page-info" class="page-info"></span>
+      <button id="gutenberg-next" class="btn btn-secondary" disabled>Next →</button>
+    </div>
+  </section>
+
+</div><!-- /.library-layout -->
+{% endblock %}

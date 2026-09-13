@@ -1,0 +1,433 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Profiles — AI Book-to-Game Engine{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════════════════════
+     LEVEL-5 CONFIRMATION MODAL
+     User must type CONFIRM before explicit content is unlocked.
+     ══════════════════════════════════════════════════════════════ -->
+<div id="level5-modal" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="l5-modal-title">
+  <div class="overlay-box modal-box">
+    <h2 id="l5-modal-title" class="modal-title warning-title">⚠ Explicit Content Warning</h2>
+    <p>Level 5 enables fully explicit content including adult themes, graphic violence, and sexual material.
+       This setting is intended for adult users only.</p>
+    <p>To confirm you are an adult and understand this setting, type <strong>CONFIRM</strong> below:</p>
+    <input type="text" id="level5-confirm-input" class="input-field"
+           placeholder="Type CONFIRM here…"
+           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+    <div class="btn-row" style="margin-top:16px">
+      <button id="level5-cancel-btn" class="btn btn-secondary">Cancel</button>
+      <button id="level5-ok-btn"     class="btn btn-danger"    disabled>Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE LAYOUT
+     ══════════════════════════════════════════════════════════════ -->
+<div class="profiles-layout">
+  <h1 class="page-heading">Profiles</h1>
+
+  <!-- ── Profile tab bar ──────────────────────────────────── -->
+  <div class="profile-tabs-wrap">
+    <div id="profile-tabs" class="profile-tabs" role="tablist" aria-label="Saved profiles">
+      <span class="placeholder-text" style="font-size:0.85rem">Loading profiles…</span>
+    </div>
+    <button id="new-profile-btn" class="btn btn-secondary btn-sm">+ New Profile</button>
+  </div>
+
+  <!-- ── Profile editor (hidden until a profile is selected) ── -->
+  <div id="profile-editor" class="profile-editor card hidden">
+    <form id="profile-form" novalidate>
+
+      <!-- Hidden: internal profile ID -->
+      <input type="hidden" id="profile-id" name="id" value="" />
+
+      <!-- Display name -->
+      <div class="form-group">
+        <label class="form-label" for="profile-name">Display Name</label>
+        <input type="text" id="profile-name" name="name" class="input-field"
+               placeholder="e.g. Family Mode, My Profile…" maxlength="64" />
+      </div>
+
+      <hr class="panel-divider" />
+
+      <!-- ─── Content Level ─────────────────────────────── -->
+      <div class="form-group">
+        <label class="form-label">Content Level</label>
+        <div class="content-level-wrap">
+          <div class="level-radios" role="radiogroup" aria-label="Content level">
+
+            <label class="level-radio-label" data-level="1">
+              <input type="radio" name="content_level" value="1" id="level-1" checked />
+              <span class="level-dot level-1">1</span>
+              <span class="level-name">Strictly Clean</span>
+            </label>
+
+            <label class="level-radio-label" data-level="2">
+              <input type="radio" name="content_level" value="2" id="level-2" />
+              <span class="level-dot level-2">2</span>
+              <span class="level-name">Family</span>
+            </label>
+
+            <label class="level-radio-label" data-level="3">
+              <input type="radio" name="content_level" value="3" id="level-3" />
+              <span class="level-dot level-3">3</span>
+              <span class="level-name">Teen</span>
+            </label>
+
+            <label class="level-radio-label" data-level="4">
+              <input type="radio" name="content_level" value="4" id="level-4" />
+              <span class="level-dot level-4">4</span>
+              <span class="level-name">Adult</span>
+            </label>
+
+            <label class="level-radio-label" data-level="5">
+              <input type="radio" name="content_level" value="5" id="level-5" />
+              <span class="level-dot level-5">5</span>
+              <span class="level-name">Explicit</span>
+            </label>
+
+          </div>
+
+          <!-- Explicit confirmation checkbox (only visible when level 5 is confirmed) -->
+          <div id="level5-checkbox-wrap" class="hidden" style="margin-top:8px">
+            <label class="form-label check-label">
+              <input type="checkbox" id="level5-confirmed" name="level5_confirmed" />
+              I confirm I am an adult and consent to explicit content.
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <hr class="panel-divider" />
+
+      <!-- ─── Content Dials ─────────────────────────────── -->
+      <div class="form-group">
+        <label class="form-label">Content Dials</label>
+        <p class="hint-text">Fine-tune how specific themes are handled in your game narrative.</p>
+        <div class="dials-grid">
+
+          <div class="dial-group">
+            <label class="dial-label" for="dial-violence">Violence</label>
+            <select id="dial-violence" name="dial_violence" class="input-field select-field dial-select">
+              <option value="none">None</option>
+              <option value="implied">Implied</option>
+              <option value="described">Described</option>
+              <option value="graphic">Graphic</option>
+            </select>
+          </div>
+
+          <div class="dial-group">
+            <label class="dial-label" for="dial-romance">Romance</label>
+            <select id="dial-romance" name="dial_romance" class="input-field select-field dial-select">
+              <option value="none">None</option>
+              <option value="fade_to_black">Fade to Black</option>
+              <option value="descriptive">Descriptive</option>
+              <option value="explicit">Explicit</option>
+            </select>
+          </div>
+
+          <div class="dial-group">
+            <label class="dial-label" for="dial-language">Language</label>
+            <select id="dial-language" name="dial_language" class="input-field select-field dial-select">
+              <option value="clean">Clean</option>
+              <option value="mild">Mild</option>
+              <option value="strong">Strong</option>
+            </select>
+          </div>
+
+          <div class="dial-group">
+            <label class="dial-label" for="dial-substance">Substance Use</label>
+            <select id="dial-substance" name="dial_substance" class="input-field select-field dial-select">
+              <option value="omit">Omit</option>
+              <option value="acknowledge">Acknowledge</option>
+              <option value="portray">Portray</option>
+            </select>
+          </div>
+
+          <div class="dial-group">
+            <label class="dial-label" for="dial-religion">Religious / Moral Tone</label>
+            <select id="dial-religion" name="dial_religion" class="input-field select-field dial-select">
+              <option value="neutral">Neutral</option>
+              <option value="reverent">Reverent</option>
+              <option value="secular">Secular</option>
+            </select>
+          </div>
+
+          <div class="dial-group">
+            <label class="dial-label" for="dial-horror">Horror / Darkness</label>
+            <select id="dial-horror" name="dial_horror" class="input-field select-field dial-select">
+              <option value="softened">Softened</option>
+              <option value="as_written">As Written</option>
+              <option value="amplified">Amplified</option>
+            </select>
+          </div>
+
+        </div><!-- /.dials-grid -->
+      </div>
+
+      <hr class="panel-divider" />
+
+      <!-- ─── Difficulty ───────────────────────────────── -->
+      <div class="form-group">
+        <label class="form-label">Difficulty</label>
+        <div class="difficulty-radios" role="radiogroup" aria-label="Difficulty level">
+
+          <label class="difficulty-label">
+            <input type="radio" name="difficulty" value="easy" />
+            <span class="difficulty-chip diff-easy">Easy</span>
+          </label>
+
+          <label class="difficulty-label">
+            <input type="radio" name="difficulty" value="medium" checked />
+            <span class="difficulty-chip diff-medium">Medium</span>
+          </label>
+
+          <label class="difficulty-label">
+            <input type="radio" name="difficulty" value="hard" />
+            <span class="difficulty-chip diff-hard">Hard</span>
+          </label>
+
+          <label class="difficulty-label">
+            <input type="radio" name="difficulty" value="scholar" />
+            <span class="difficulty-chip diff-scholar">Scholar</span>
+          </label>
+
+        </div>
+      </div>
+
+      <hr class="panel-divider" />
+
+      <!-- ─── Action buttons ───────────────────────────── -->
+      <div class="btn-row profile-btn-row">
+        <button type="button" id="save-profile-btn"     class="btn btn-primary">Save Profile</button>
+        <button type="button" id="activate-profile-btn" class="btn btn-secondary">Set Active</button>
+        <button type="button" id="delete-profile-btn"   class="btn btn-danger">Delete</button>
+      </div>
+      <div id="profile-result" class="test-result hidden" role="alert"></div>
+
+    </form>
+  </div><!-- /#profile-editor -->
+
+</div><!-- /.profiles-layout -->
+
+<!-- ════════════════════════════════════════════════════════════
+     PROFILES PAGE INLINE SCRIPT
+     ════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ── State ────────────────────────────────────────────────── */
+  let profiles       = [];
+  let activeProfile  = null;
+  let currentProfile = null;
+
+  /* ── DOM refs ─────────────────────────────────────────────── */
+  const tabsEl        = document.getElementById('profile-tabs');
+  const editorEl      = document.getElementById('profile-editor');
+  const resultEl      = document.getElementById('profile-result');
+  const newBtn        = document.getElementById('new-profile-btn');
+  const saveBtn       = document.getElementById('save-profile-btn');
+  const activateBtn   = document.getElementById('activate-profile-btn');
+  const deleteBtn     = document.getElementById('delete-profile-btn');
+  const level5Modal   = document.getElementById('level5-modal');
+  const level5Input   = document.getElementById('level5-confirm-input');
+  const level5OkBtn   = document.getElementById('level5-ok-btn');
+  const level5CancelBtn = document.getElementById('level5-cancel-btn');
+  const level5CheckWrap = document.getElementById('level5-checkbox-wrap');
+  const level5Checkbox  = document.getElementById('level5-confirmed');
+
+  /* ── Utilities ────────────────────────────────────────────── */
+  function showResult(msg, ok) {
+    resultEl.textContent = (ok ? '✔ ' : '✖ ') + msg;
+    resultEl.className   = 'test-result ' + (ok ? 'test-ok' : 'test-fail');
+  }
+
+  function setVisible(el, visible) { if (el) el.classList.toggle('hidden', !visible); }
+
+  /* ── Collect form data ────────────────────────────────────── */
+  function collectForm() {
+    const data = { dials: {} };
+    document.getElementById('profile-form').querySelectorAll('[name]').forEach(el => {
+      if ((el.type === 'radio' || el.type === 'checkbox') && !el.checked) return;
+      if (el.name.startsWith('dial_')) {
+        data.dials[el.name.replace('dial_', '')] = el.value;
+      } else {
+        data[el.name] = el.value;
+      }
+    });
+    return data;
+  }
+
+  /* ── Populate form from profile object ────────────────────── */
+  function populateForm(p) {
+    document.getElementById('profile-id').value   = p.id   || '';
+    document.getElementById('profile-name').value = p.name || '';
+
+    /* Content level */
+    const lvl = String(p.content_level || 1);
+    const radio = document.querySelector(`input[name="content_level"][value="${lvl}"]`);
+    if (radio) radio.checked = true;
+    updateLevel5UI(parseInt(lvl, 10));
+
+    /* Dials */
+    const dialMap = {
+      'violence':'dial-violence','romance':'dial-romance','language':'dial-language',
+      'substance':'dial-substance','religion':'dial-religion','horror':'dial-horror'
+    };
+    Object.entries(dialMap).forEach(([key, id]) => {
+      const val = p.dials && p.dials[key];
+      if (!val) return;
+      const sel = document.getElementById(id);
+      for (const opt of sel.options) { if (opt.value === val) { opt.selected = true; break; } }
+    });
+
+    /* Difficulty */
+    const diff = p.difficulty || 'medium';
+    const diffR = document.querySelector(`input[name="difficulty"][value="${diff}"]`);
+    if (diffR) diffR.checked = true;
+
+    /* Delete button disabled for the active profile */
+    deleteBtn.disabled = (p.name === activeProfile);
+  }
+
+  function updateLevel5UI(level) {
+    const is5 = level === 5;
+    setVisible(level5CheckWrap, is5);
+    if (!is5) level5Checkbox.checked = false;
+  }
+
+  /* ── Render profile tab buttons ───────────────────────────── */
+  function renderTabs() {
+    tabsEl.innerHTML = '';
+    if (!profiles.length) {
+      tabsEl.innerHTML = '<span class="placeholder-text" style="font-size:0.85rem">No profiles yet. Create one!</span>';
+      return;
+    }
+    profiles.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'btn profile-tab' + (p.name === activeProfile ? ' active' : '');
+      btn.textContent = p.name + (p.name === activeProfile ? ' ★' : '');
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('aria-selected', String(p.name === activeProfile));
+      btn.addEventListener('click', () => selectProfile(p));
+      tabsEl.appendChild(btn);
+    });
+  }
+
+  function selectProfile(p) {
+    currentProfile = p;
+    populateForm(p);
+    editorEl.classList.remove('hidden');
+    renderTabs();
+  }
+
+  /* ── Load profiles from API ───────────────────────────────── */
+  async function loadProfiles() {
+    try {
+      const resp = await fetch('/api/profiles');
+      if (!resp.ok) throw new Error('Server error ' + resp.status);
+      const json  = await resp.json();
+      profiles      = json.profiles || [];
+      activeProfile = json.active   || null;
+      renderTabs();
+      const toSelect = profiles.find(p => p.name === activeProfile) || profiles[0];
+      if (toSelect) selectProfile(toSelect);
+    } catch (err) {
+      tabsEl.innerHTML = '<span class="test-fail">Failed to load profiles: ' + err.message + '</span>';
+    }
+  }
+
+  /* ── New Profile ──────────────────────────────────────────── */
+  newBtn.addEventListener('click', () =>
+    selectProfile({ id: '', name: 'New Profile', content_level: 1, dials: {}, difficulty: 'medium' }));
+
+  /* ── Content level radios → Level 5 guard ─────────────────── */
+  let previousLevel = 1;
+  document.querySelectorAll('input[name="content_level"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (radio.value === '5') {
+        level5Input.value = '';
+        level5OkBtn.disabled = true;
+        setVisible(level5Modal, true);
+        setTimeout(() => level5Input.focus(), 50);
+      } else {
+        previousLevel = parseInt(radio.value, 10);
+        updateLevel5UI(previousLevel);
+      }
+    });
+  });
+
+  level5Input.addEventListener('input', () => {
+    level5OkBtn.disabled = level5Input.value.trim() !== 'CONFIRM';
+  });
+
+  level5OkBtn.addEventListener('click', () => {
+    level5Checkbox.checked = true;
+    updateLevel5UI(5);
+    previousLevel = 5;
+    setVisible(level5Modal, false);
+  });
+
+  level5CancelBtn.addEventListener('click', () => {
+    /* Revert radio selection to the previous valid level */
+    const revert = (previousLevel !== 5) ? previousLevel : 1;
+    const r = document.querySelector(`input[name="content_level"][value="${revert}"]`);
+    if (r) r.checked = true;
+    updateLevel5UI(revert);
+    setVisible(level5Modal, false);
+  });
+
+  /* ── Save Profile ─────────────────────────────────────────── */
+  saveBtn.addEventListener('click', async () => {
+    try {
+      const resp = await fetch('/api/profiles/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(collectForm()),
+      });
+      const json = await resp.json().catch(() => ({}));
+      showResult(json.message || json.error || (resp.ok ? 'Saved.' : 'Save failed.'), resp.ok && json.success !== false);
+      if (resp.ok) await loadProfiles();
+    } catch (err) { showResult('Network error: ' + err.message, false); }
+  });
+
+  /* ── Set Active ───────────────────────────────────────────── */
+  activateBtn.addEventListener('click', async () => {
+    const name = document.getElementById('profile-name').value;
+    try {
+      const resp = await fetch('/api/profiles/activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      const json = await resp.json().catch(() => ({}));
+      showResult(json.message || (resp.ok ? 'Activated.' : 'Failed.'), resp.ok);
+      if (resp.ok) { activeProfile = name; await loadProfiles(); }
+    } catch (err) { showResult('Network error: ' + err.message, false); }
+  });
+
+  /* ── Delete Profile ───────────────────────────────────────── */
+  deleteBtn.addEventListener('click', async () => {
+    const id   = document.getElementById('profile-id').value;
+    const name = document.getElementById('profile-name').value;
+    if (!id || name === activeProfile) return;
+    if (!confirm(`Delete profile "${name}"? This cannot be undone.`)) return;
+    try {
+      const resp = await fetch(`/api/profiles/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      const json = await resp.json().catch(() => ({}));
+      showResult(json.message || (resp.ok ? 'Deleted.' : 'Failed.'), resp.ok);
+      if (resp.ok) { editorEl.classList.add('hidden'); await loadProfiles(); }
+    } catch (err) { showResult('Network error: ' + err.message, false); }
+  });
+
+  /* ── Bootstrap ────────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', loadProfiles);
+}());
+</script>
+
+{% endblock %}
