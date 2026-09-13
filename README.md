@@ -1,84 +1,62 @@
 # AI Book-to-Game Engine
 
-Turn any book into a playable text adventure. Loads books from Project Gutenberg or your own files. All AI runs locally — plug in whatever models you have.
+Turn any book into a playable text adventure! Search thousands of books from Project Gutenberg or upload your own files, and the AI will analyze the story to build a fully playable world.
 
-## Quick Start
+## How to Install (For Players)
 
-### 1. Install dependencies
-```bash
-pip install -r requirements.txt
-```
+You do **not** need to be a programmer or install Python to play this!
 
-### 2. Configure your AI models
-Edit `config.json` — or launch the app and go to **Settings**.
+1. Go to the **[Releases page](https://github.com/Billflorio/ai-text-adventure-engine/releases)**.
+2. Download the latest `AI Text Adventure Setup.exe`.
+3. Double-click to install and run the app. It will open like a normal desktop application.
 
-Minimum to get started (pick one):
+## Setting up the AI (Required)
 
-**Ollama (local, free):**
-```json
-"llm": { "backend": "ollama", "model": "llama3.1:8b", "base_url": "http://localhost:11434" }
-```
+To make the game work, it needs an "AI Brain" (LLM). You have two choices: use a free local AI, or use a paid cloud AI (like OpenAI).
 
-**OpenAI:**
-```json
-"llm": { "backend": "openai", "model": "gpt-4o", "api_key": "sk-..." }
-```
+### Option A: Free Local AI (Recommended)
+If you have a decent computer and want everything to run 100% locally and privately:
+1. Download and install [Ollama](https://ollama.com/).
+2. Open your command prompt/terminal and run: `ollama run qwen2.5-coder:7b` (This will download the AI model — it may take a few minutes).
+3. Keep Ollama running in the background.
+4. Open the AI Text Adventure App, go to **Settings**, and select **Ollama** as your LLM Backend.
 
-**LM Studio:**
-```json
-"llm": { "backend": "lmstudio", "model": "your-model-name", "base_url": "http://localhost:1234" }
-```
+### Option B: Cloud AI (OpenAI, Anthropic, Gemini)
+If you prefer to use an existing API key:
+1. Open the AI Text Adventure App and go to **Settings**.
+2. Select your provider (e.g., OpenAI).
+3. Paste your API Key in the box provided.
 
-For images, set `"image": { "backend": "none" }` to skip images, or configure Stable Diffusion / DALL-E.
+## (Optional) Setting up Image Generation
 
-### 3. Run
-```bash
-python main.py
-```
-Opens in your browser at `http://localhost:8742`.
-
----
+If you want the game to automatically generate beautiful scene art for every location in your story, you need an image generator:
+* **Cloud:** You can use DALL-E 3 by putting in an OpenAI API key.
+* **Local:** If you have a strong graphics card (GPU), you can install [ComfyUI](https://github.com/comfyanonymous/ComfyUI). Make sure ComfyUI is running in the background before you start generating a game!
 
 ## How It Works
 
-1. **Load a book** — search Project Gutenberg or upload your own PDF/EPUB/TXT
-2. **AI analysis** — the LLM reads the book and extracts characters, locations, plot events
-3. **Game generation** — a full text adventure world is built from the source material
-4. **Play** — explore the story world, talk to characters, solve puzzles, answer comprehension questions
-5. **Images** — if an image backend is configured, each location gets AI-generated scene art
+1. **Load a book** — Search Project Gutenberg or upload your own PDF/EPUB/TXT.
+2. **AI analysis** — The engine reads the book and extracts characters, locations, and plot events.
+3. **Game generation** — A full text adventure world is built from the source material.
+4. **Play** — Explore the story world, talk to characters, solve puzzles, and answer comprehension questions.
+5. **Images** — If an image backend is configured, each location gets AI-generated scene art.
 
 ## Content Profiles
 
-Set up profiles for different users/occasions. Control:
+Parents and teachers can set up profiles to control the experience:
 - **Content level** (1 = Strictly Clean → 5 = Explicit)
-- **Individual dials** for violence, romance, language, religious tone, horror
+- **Individual dials** for violence, romance, language, religious tone, and horror.
 
-Example: The same book (e.g. *Lady Chatterley's Lover*) plays very differently on a "Sunday School" profile vs an "Adult" profile.
-
-## Supported Book Sources
-
-- **Project Gutenberg** (~70,000 free public domain books, searchable in-app)
-- **Your own files**: PDF, EPUB, TXT
-
-## Supported AI Backends
-
-| LLM | Image Gen |
-|-----|-----------|
-| Ollama (local) | Stable Diffusion (AUTOMATIC1111) |
-| LM Studio (local) | ComfyUI (local) |
-| OpenAI (GPT-4o etc.) | DALL-E 3 |
-| Anthropic (Claude) | Any OpenAI-compatible |
-| Google Gemini | None (text-only mode) |
-| Any OpenAI-compatible API | |
+For example, the exact same book plays very differently on a "Sunday School" profile versus an "Adult" profile!
 
 ---
 
-## Data
+### For Developers
 
-All data is stored locally in `data/`:
-- `data/books/` — cached downloaded books
-- `data/games/` — generated game worlds
-- `data/images/` — generated scene art
-- `data/saves/` — player save files
-
-Nothing leaves your machine.
+If you want to run the engine from source:
+```bash
+git clone https://github.com/Billflorio/ai-text-adventure-engine.git
+cd ai-text-adventure-engine
+pip install -r requirements.txt
+python main.py
+```
